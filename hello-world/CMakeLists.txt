@@ -2,7 +2,7 @@ add_executable(hello-world
 	hello-world.c
 )
 
-pico_set_linker_script(hello-world ${CMAKE_CURRENT_SOURCE_DIR}/pico-toolkit-flash.ld)
+pico_set_linker_script(hello-world $ENV{PICO_TOOLKIT_PATH}/src/picolibc-glue/pico-toolkit-flash.ld)
 
 target_link_libraries(hello-world
 	hardware_gpio

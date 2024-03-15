@@ -9,4 +9,4 @@
 	url = https://github.com/picolibc/picolibc.git
 [submodule "pico-toolkit"]
 	path = pico-toolkit
-	url = https://github.com/sgstreet/pico-toolkit.git
+	url = git@github.com:sgstreet/pico-toolkit.git

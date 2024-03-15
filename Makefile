@@ -19,19 +19,19 @@ endif
 export PICO_SDK_PATH ?= ${PROJECT_ROOT}/pico-sdk
 export PICO_EXTRAS_PATH ?= ${PROJECT_ROOT}/pico-extras
 export PICO_TOOLKIT_PATH ?= ${PROJECT_ROOT}/pico-toolkit
+export PICOLIBC_PATH ?= ${PREFIX}/arm-none-eabi
 
 MAKEFLAGS += ${SILENT}
 
 ${BUILD_ROOT}/picolibc/build.ninja:
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+cd $(dir $@) && meson setup -Dincludedir=picolibc/arm-none-eabi/include -Dlibdir=picolibc/arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX} ${PROJECT_ROOT}/picolibc
+	+cd $(dir $@) && meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
 
-${PREFIX}/picolibc.specs: ${BUILD_ROOT}/picolibc/build.ninja
+${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${BUILD_ROOT}/picolibc/build.ninja
 	+cd $(dir $<) && ninja install
 	+touch $@
 
-picolibc: ${PREFIX}/picolibc.specs
-.PHONY: picolibc
+picolibc: ${PREFIX}/arm-none-eabi/lib/picolibc.specs
 
 ${PROJECT_ROOT}/openocd/configure:
 	@echo "BOOTSTRAP $(dir $@)"
@@ -47,14 +47,13 @@ ${PREFIX}/bin/openocd: ${OUTPUT_ROOT}/openocd/Makefile
 	+cd $(dir $<) && make install
 	
 openocd: ${PREFIX}/bin/openocd
-.PHONY: openocd
 
-${BUILD_ROOT}/Makefile: ${PROJECT_ROOT}/CMakeLists.txt
+${BUILD_ROOT}/Makefile: openocd picolibc ${PROJECT_ROOT}/CMakeLists.txt
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	+cmake -B${BUILD_ROOT} -S${PROJECT_ROOT} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} 
-.PHONY: ${BUILD_PATH}
+#.PHONY: ${BUILD_PATH}
 
-all: ${BUILD_ROOT}/Makefile
+all: ${BUILD_ROOT}/Makefile  
 	@echo "BUILD pico-toolkit"
 	cd ${BUILD_ROOT} && make
 	
@@ -67,8 +66,8 @@ distclean:
 	-${RM} -r ${BUILD_ROOT} ${INSTALL_ROOT}
 
 realclean:
-	@echo "REALCLEAN ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp ${PROJECT_ROOT}/local"
-	-${RM} -r ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp ${PROJECT_ROOT}/local
+	@echo "REALCLEAN ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp"
+	-${RM} -r ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp
 
 info:
 	@echo "PICO_SDK_PATH=${PICO_SDK_PATH}"
