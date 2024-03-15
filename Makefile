@@ -23,19 +23,26 @@ export PICOLIBC_PATH ?= ${PREFIX}/arm-none-eabi
 
 MAKEFLAGS += ${SILENT}
 
-${BUILD_ROOT}/picolibc/build.ninja:
+${OUTPUT_ROOT}/.submodule-init:
+	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	+git submodule update --init --recursive
+	touch $@
+
+${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	+cd $(dir $@) && meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
-
-${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${BUILD_ROOT}/picolibc/build.ninja
+	touch $@
+	
+${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${OUTPUT_ROOT}/picolibc/build.ninja
 	+cd $(dir $<) && ninja install
-	+touch $@
+	touch $@
 
 picolibc: ${PREFIX}/arm-none-eabi/lib/picolibc.specs
 
-${PROJECT_ROOT}/openocd/configure:
+${PROJECT_ROOT}/openocd/configure: ${OUTPUT_ROOT}/.submodule-init
 	@echo "BOOTSTRAP $(dir $@)"
 	+cd $(dir $@) && ./bootstrap
+	touch $@
 
 ${OUTPUT_ROOT}/openocd/Makefile: ${PROJECT_ROOT}/openocd/configure
 	@echo "CONFIGURE $(dir $@)"
@@ -67,6 +74,7 @@ distclean:
 
 realclean:
 	@echo "REALCLEAN ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp"
+	git submodule deinit --all
 	-${RM} -r ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp
 
 info:
