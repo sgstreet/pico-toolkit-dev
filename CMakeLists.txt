@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_subdirectory(hello-world)
+add_subdirectory(picolibc-tls-test)
 
 #add_subdirectory(lib)
 #add_subdirectory(rtos-toolkit-hog-test)
