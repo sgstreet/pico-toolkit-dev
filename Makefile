@@ -25,7 +25,7 @@ MAKEFLAGS += ${SILENT}
 
 ${OUTPUT_ROOT}/.submodule-init:
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+git submodule update --init --recursive
+	+git submodule update --init --recursive --remote
 	touch $@
 
 ${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
@@ -74,7 +74,7 @@ distclean:
 
 realclean:
 	@echo "REALCLEAN ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp"
-	git submodule deinit --all
+	git submodule deinit -f --all
 	-${RM} -r ${OUTPUT_ROOT} ${PREFIX} ${PROJECT_ROOT}/tmp
 
 info:
