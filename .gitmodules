@@ -6,7 +6,8 @@
 	url = https://github.com/openocd-org/openocd.git
 [submodule "picolibc"]
 	path = picolibc
-	url = https://github.com/picolibc/picolibc.git
+	url = git@github.com:sgstreet/picolibc.git
+	branch = tls-2040
 [submodule "pico-toolkit"]
 	path = pico-toolkit
 	url = git@github.com:sgstreet/pico-toolkit.git

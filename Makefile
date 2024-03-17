@@ -30,7 +30,7 @@ ${OUTPUT_ROOT}/.submodule-init:
 
 ${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+cd $(dir $@) && meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
+	+cd $(dir $@) && meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib -Dtls-rp2040=true ${PROJECT_ROOT}/picolibc
 	touch $@
 	
 ${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${OUTPUT_ROOT}/picolibc/build.ninja
