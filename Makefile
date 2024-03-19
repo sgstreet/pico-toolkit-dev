@@ -25,40 +25,40 @@ MAKEFLAGS += ${SILENT}
 
 ${OUTPUT_ROOT}/.submodule-init:
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+git submodule update --init --recursive
+	git submodule update --init --recursive
 	touch $@
 
 ${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+cd $(dir $@) && meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
+#	cd $(dir $@) && CFLAGS="-funwind-tables -mpoke-function-name" meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib -Dmultilib=false -Dmultilib-list="thumb/v6-m/nofp;@mthumb@march=armv6s-m@mfloat-abi=soft" ${PROJECT_ROOT}/picolibc
+	cd $(dir $@) && CFLAGS="-funwind-tables -mpoke-function-name" meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
 	touch $@
 	
 ${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${OUTPUT_ROOT}/picolibc/build.ninja
-	+cd $(dir $<) && ninja install
+	cd $(dir $<) && ninja install
 	touch $@
 
 picolibc: ${PREFIX}/arm-none-eabi/lib/picolibc.specs
 
 ${PROJECT_ROOT}/openocd/configure: ${OUTPUT_ROOT}/.submodule-init
 	@echo "BOOTSTRAP $(dir $@)"
-	+cd $(dir $@) && ./bootstrap
+	cd $(dir $@) && ./bootstrap
 	touch $@
 
 ${OUTPUT_ROOT}/openocd/Makefile: ${PROJECT_ROOT}/openocd/configure
 	@echo "CONFIGURE $(dir $@)"
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+cd $(dir $@) && ${PROJECT_ROOT}/openocd/configure --prefix=${PREFIX} --enable-cmsis-dap --enable-cmsis-dap-v2 --enable-jlink
+	cd $(dir $@) && ${PROJECT_ROOT}/openocd/configure --prefix=${PREFIX} --enable-cmsis-dap --enable-cmsis-dap-v2 --enable-jlink
 
 ${PREFIX}/bin/openocd: ${OUTPUT_ROOT}/openocd/Makefile
 	@echo "BUILDING $(dir $<)"
-	+cd $(dir $<) && make install
+	cd $(dir $<) && make install
 	
 openocd: ${PREFIX}/bin/openocd
 
 ${BUILD_ROOT}/Makefile: openocd picolibc ${PROJECT_ROOT}/CMakeLists.txt
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	+cmake -B${BUILD_ROOT} -S${PROJECT_ROOT} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} 
-#.PHONY: ${BUILD_PATH}
+	cmake -B${BUILD_ROOT} -S${PROJECT_ROOT} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPICO_TOOLKIT_TESTS_ENABLED=true
 
 all: ${BUILD_ROOT}/Makefile  
 	@echo "BUILD pico-toolkit"
@@ -80,6 +80,7 @@ realclean:
 info:
 	@echo "PICO_SDK_PATH=${PICO_SDK_PATH}"
 	@echo "PICO_TOOLKIT_PATH=${PICO_TOOLKIT_PATH}"
+	@echo "PICOLIBC_PATH=${PICOLIBC_PATH}"
 	@echo "BOARD_TYPE=${BOARD_TYPE}"
 	@echo "BUILD_TYPE=${BUILD_TYPE}"
 	@echo "PROJECT_ROOT=${PROJECT_ROOT}"
