@@ -13,7 +13,7 @@
 #include <hardware/gpio.h>
 #include <hardware/uart.h>
 
-#include <pico/iob.h>
+#include <pico/toolkit/iob.h>
 #include <pico/unique_id.h>
 
 #define UART_ID uart0
