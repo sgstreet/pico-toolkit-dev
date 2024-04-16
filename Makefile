@@ -19,7 +19,7 @@ endif
 export PICO_SDK_PATH ?= ${PROJECT_ROOT}/pico-sdk
 export PICO_EXTRAS_PATH ?= ${PROJECT_ROOT}/pico-extras
 export PICO_TOOLKIT_PATH ?= ${PROJECT_ROOT}/pico-toolkit
-export PICOLIBC_PATH ?= ${PREFIX}/arm-none-eabi
+#export PICOLIBC_PATH ?= ${PREFIX}/arm-none-eabi
 
 MAKEFLAGS += ${SILENT}
 
@@ -30,7 +30,6 @@ ${OUTPUT_ROOT}/.submodule-init:
 
 ${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-#	cd $(dir $@) && CFLAGS="-funwind-tables -mpoke-function-name" meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib -Dmultilib=false -Dmultilib-list="thumb/v6-m/nofp;@mthumb@march=armv6s-m@mfloat-abi=soft" ${PROJECT_ROOT}/picolibc
 	cd $(dir $@) && CFLAGS="-funwind-tables -mpoke-function-name" meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
 	touch $@
 	
@@ -56,7 +55,8 @@ ${PREFIX}/bin/openocd: ${OUTPUT_ROOT}/openocd/Makefile
 	
 openocd: ${PREFIX}/bin/openocd
 
-${BUILD_ROOT}/Makefile: openocd picolibc ${PROJECT_ROOT}/CMakeLists.txt
+#${BUILD_ROOT}/Makefile: openocd picolibc ${PROJECT_ROOT}/CMakeLists.txt
+${BUILD_ROOT}/Makefile: openocd ${PROJECT_ROOT}/CMakeLists.txt
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	cmake -B${BUILD_ROOT} -S${PROJECT_ROOT} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPICO_TOOLKIT_TESTS_ENABLED=true
 
