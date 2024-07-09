@@ -28,35 +28,9 @@ ${OUTPUT_ROOT}/.submodule-init:
 	git submodule update --init --recursive
 	touch $@
 
-${OUTPUT_ROOT}/picolibc/build.ninja: ${OUTPUT_ROOT}/.submodule-init
-	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	cd $(dir $@) && CFLAGS="-funwind-tables -mpoke-function-name" meson setup -Dincludedir=arm-none-eabi/include -Dlibdir=arm-none-eabi/lib --cross-file ${PROJECT_ROOT}/picolibc/scripts/cross-arm-none-eabi.txt -Dprefix=${PREFIX} -Dspecsdir=${PREFIX}/arm-none-eabi/lib ${PROJECT_ROOT}/picolibc
-	touch $@
-	
-${PREFIX}/arm-none-eabi/lib/picolibc.specs: ${OUTPUT_ROOT}/picolibc/build.ninja
-	cd $(dir $<) && ninja install
-	touch $@
-
-picolibc: ${PREFIX}/arm-none-eabi/lib/picolibc.specs
-
-${PROJECT_ROOT}/openocd/configure: ${OUTPUT_ROOT}/.submodule-init
-	@echo "BOOTSTRAP $(dir $@)"
-	cd $(dir $@) && ./bootstrap
-	touch $@
-
-${OUTPUT_ROOT}/openocd/Makefile: ${PROJECT_ROOT}/openocd/configure
-	@echo "CONFIGURE $(dir $@)"
-	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	cd $(dir $@) && ${PROJECT_ROOT}/openocd/configure --prefix=${PREFIX} --enable-cmsis-dap --enable-cmsis-dap-v2 --enable-jlink
-
-${PREFIX}/bin/openocd: ${OUTPUT_ROOT}/openocd/Makefile
-	@echo "BUILDING $(dir $<)"
-	cd $(dir $<) && make install
-	
-openocd: ${PREFIX}/bin/openocd
-
-#${BUILD_ROOT}/Makefile: openocd picolibc ${PROJECT_ROOT}/CMakeLists.txt
-${BUILD_ROOT}/Makefile: openocd ${PROJECT_ROOT}/CMakeLists.txt
+${PROJECT_ROOT}/CMakeLists.txt: ${OUTPUT_ROOT}/.submodule-init
+ 
+${BUILD_ROOT}/Makefile: ${PROJECT_ROOT}/CMakeLists.txt
 	+[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	cmake -B${BUILD_ROOT} -S${PROJECT_ROOT} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPICO_TOOLKIT_TESTS_ENABLED=true
 
